@@ -1,0 +1,105 @@
+# # See https://cds.cern.ch/record/855452/files/lhcb-2005-034.pdf and https://lbeventtype.web.cern.ch/
+# # to figure out the correct event number.
+# EventType: <your event number here>
+#
+# # This descriptor is just documentation - it's more important to get the descriptor inside your cut tool
+# # correct if using additional cuts.
+# Descriptor: <your decay descriptor here>
+#
+# # Nickname follows the convention: Particle_Decay=Other, with:
+# #    - Particle: The name of the particle being decayed.
+# #    - Decay: The forced steps in the particle's decay chain.
+# #    - Other: Extra information about e.g. cuts applied, phase space model used.
+# #    (See https://cds.cern.ch/record/855452/files/lhcb-2005-034.pdf for more information)
+# NickName: <your nickname here>
+#
+# # The name of the tool describing the cuts to be applied after EvtGen. Often, the existing tool
+# # DaughtersInLHCb, which requires the daughter particles to fall within the LHCb acceptance, is
+# # sufficient. An example of how to configure a more complex set of cuts is shown below.
+# # (See the documentation, e.g. https://lhcb-doxygen.web.cern.ch/lhcb-doxygen/gauss/v49r20/d2/d19/class_i_gen_cut_tool.html
+# # for some other existing cut tools.)
+# Cuts: <your cut tool here>, e.g. DaughtersInLHCb or LoKi::GenCutTool/MyCutTool (see below)
+#
+# # The description provided here is added to the table of existing DecFiles at:
+# # http://lhcbdoc.web.cern.ch/lhcbdoc/decfiles/
+# Documentation: <Add a brief description of what this DecFile generates here>
+# EndDocumentation
+#
+# PhysicsWG: <Relevant working group here>, e.g. Charm
+# Tested: <hopefully this will be yes...>
+# Responsible: <your name here>
+# Email: <contact email here>
+# Date: <date here>
+# # The time taken to generate 1 event. Usually, < 1 min is suitable. If your decay takes longer than
+# # 1 minute to generate, the convention is to indicate the approximate time in minutes rather than give
+# # an upper value.
+# CPUTime: <cpu time here>
+#
+# # Any additional python code necessary to configure your cut tools goes in this section. If using an existing cut tool,
+# # such as DaughtersInLHCb, this section can be removed.
+# InsertPythonCode:
+#
+# # For most applications, configuring a LoKi::GenCutTool will provide enough flexibility in your
+# # generator level cuts.
+# from Configurables import LoKi__GenCutTool
+# from Gauss.Configuration import *
+# gen = Generation()
+#
+# # You can name the tool whatever you like, but make sure it matches the name given after 'Cuts' above.
+# gen.SignalPlain.addTool ( LoKi__GenCutTool , 'MyCutTool' )
+#
+# myCutTool = gen.SignalPlain.MyCutTool
+#
+# # This descriptor matters so it's important to get it right - pay particular attention to the type of
+# # arrows used! For reference, see:
+# # https://twiki.cern.ch/twiki/bin/view/LHCb/FAQ/LoKiNewDecayFinders#Grammar_in_short
+# # For the following, use D*+ -> (D0 -> pi+ pi-) pi+ as an example decay:
+# myCutTool.Decay     = '<decay decay descriptor here>' # e.g. '^[D*(2010)+ => ^( D0 => pi+ pi- ) ^pi+]CC'
+#
+# # Define all the cuts you want to apply here - for a list of available LoKi functors, see:
+# # https://twiki.cern.ch/twiki/bin/view/LHCb/LoKiGenParticleFunctions
+# # As a simple example, suppose we wanted our D0 to have PT > 2.5 GeV and a charged pion daughter in
+# # the detector acceptance with PT > 1 GeV:
+# myCutTool.Preambulo += [
+#     'from GaudiKernel.SystemOfUnits import GeV',
+#     'inAcc       = ( in_range( 0.005, GTHETA, 0.400 ) )',
+#     'goodD0pion  = ( ("pi+" == GABSID) & ( GPT > 1 * GeV ) & inAcc)'
+#     'goodD0      = ( (GPT > 2.5 * GeV) & GINTREE(goodD0pion) )',
+# ]
+#
+# # Now, specify which cuts should be applied to which particles in your event:
+# myCutTool.Cuts      =    {
+#     '[D0]cc'  : 'goodD0',
+#     }
+# EndInsertPythonCode
+
+# This section controls the decay of your signal particle to the final state you want to study in EvtGen.
+# Again considering the example of D*+ -> (D0 -> pi+ pi-) pi+:
+
+# To force a specific decay (or a number of decays) of a daughter particle, you must define an
+# alias here and provide a decay for that alias.
+Alias MyD0 D0
+Alias MyantiD0 anti-D0
+ChargeConj MyD0 MyantiD0
+
+# The initial signal particle must be decayed and is appended by 'sig':
+Decay D*+sig
+  1.000 MyD0  pi+    VSS;
+Enddecay
+CDecay D*-sig
+
+# The decays here are described by a branching fraction, the final state particles and a
+# phase space model to use:
+Decay MyD0
+  1.000   pi+ pi-  PHSP;
+Enddecay
+CDecay MyantiD0
+
+#If instead we wanted a mixture of pi+pi-/K+K- final states we could have written:
+# Decay MyD0
+#   0.500   pi+ pi-  PHSP;
+#   0.500   K+ K-  PHSP;
+# Enddecay
+# CDecay MyantiD0
+
+End

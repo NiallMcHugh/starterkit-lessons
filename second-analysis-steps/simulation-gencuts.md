@@ -4,7 +4,7 @@
 * Learn how to modify the used decay channels
 * Learn how to modify/remove generator level cuts
 
-{% endobjectives %} 
+{% endobjectives %}
 # Modifying the decay
 
 ## Adding a decay channel
@@ -72,7 +72,7 @@ If you need to modify the cut tool, you generally can pick between multiple opti
 2. Use `LoKi` functors for `GenParticle` (starting with a `G`) in a `LoKi::GenCutTool`.
 3. Last resort for really special things: write your own C++ implementation of the `IGenCutTool` interface.
 
-`LoKi::GenCutTool` are a good solution when you need to impose additional requirements beyond those provided by `DaughtersInLHCb`, for example a minimum for the transverse mometum of a `D0`.
+`LoKi::GenCutTool` are a good solution when you need to impose additional requirements beyond those provided by `DaughtersInLHCb`, for example a minimum for the transverse momentum of a `D0`.
 For local tests, this can be easily implemented by overwriting the default cut tool set by `27175000.py`:
 ```python
 from Configurables import LoKi__GenCutTool
@@ -96,19 +96,19 @@ tightCut.Cuts = {
    '[mu+]cc': 'inAcc'
 }
 ```
-You can again check that this works and a larger sample of 10,000 events can be found `root://eosuser.cern.ch//eos/user/l/lhcbsk/sim-lesson/GaussTightCut-27163003-10000ev.xgen`
-.
-You might also notice a slight slow-down in the rate at which events are produced: by default, 
+You can again check that this works and a larger sample of 10,000 events can be found `root://eosuser.cern.ch//eos/user/l/lhcbsk/sim-lesson/GaussTightCut-27163003-10000ev.xgen`.
+
+You might also notice a slight slow-down in the rate at which events are produced: by default,
 an event failing the generator cut (which is applied after Pythia and EvtGen are done) triggers a reset of
 the entire generation phase of the simulation. Therefore, very tight generator level cuts in combination
 with a signal particle that only rarely occurs in minimum bias events can results in the generation phase
 taking manifold longer than the simulation of the detector response (and you might want to rethink your
 strategy for event generation).
-For some ideas on which kind of cuts to apply, you can have a look here: https://twiki.cern.ch/twiki/bin/view/LHCb/GeneratorLevelTightCuts
+For some ideas on which kind of cuts to apply, you can have a look at this [twiki page](https://twiki.cern.ch/twiki/bin/view/LHCb/GeneratorLevelTightCuts). A list of `LoKi` functors which can be used to apply these cuts is found [here](https://twiki.cern.ch/twiki/bin/view/LHCb/LoKiGenParticleFunctions).
 
 {% callout "Modifying cut tools for production" %}
 
 As the cut tools are to be configured in the DecFiles, they form an integral part of the event-type itself.
 Hence, any modification that changes the produced events usually requires the release of a new DecFile including a new event-type or a new simulation sub-version so events end up in a different bookkeeping location.
 
-{% endcallout %} 
+{% endcallout %}
